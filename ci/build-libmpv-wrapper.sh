@@ -3,6 +3,7 @@
 # 包装脚本：将 ci 脚本复制到 mpv 源码目录并执行构建
 
 MPV_SOURCE="${MPV_SOURCE:-/tmp/mpv-source}"
+WORK_DIR="$(pwd)"
 
 if [ ! -d "$MPV_SOURCE" ]; then
     echo "Error: MPV_SOURCE directory not found: $MPV_SOURCE" >&2
@@ -19,5 +20,7 @@ cd "$MPV_SOURCE"
 chmod +x ci/build-libmpv-mingw32.sh
 ./ci/build-libmpv-mingw32.sh
 
-echo "=== Copying artifacts back ==="
-cp -rv artifact/* "$OLDPWD/artifact/" 2>/dev/null || true
+echo "=== Copying artifacts back to $WORK_DIR ==="
+mkdir -p "$WORK_DIR/artifact"
+cp -rv "$MPV_SOURCE/artifact/"* "$WORK_DIR/artifact/"
+ls -la "$WORK_DIR/artifact/"
