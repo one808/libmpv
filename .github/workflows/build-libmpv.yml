@@ -41,6 +41,10 @@ jobs:
       - name: Clone mpv source
         run: |
           git clone --depth 1 https://github.com/mpv-player/mpv.git /tmp/mpv-source
+          cd /tmp/mpv-source
+          mkdir -p subprojects
+          meson wrap install mujs
+          meson subprojects download
           echo "MPV_SOURCE=/tmp/mpv-source" >> $GITHUB_ENV
 
       - name: Build libmpv DLL
