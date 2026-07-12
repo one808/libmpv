@@ -14,14 +14,14 @@ jobs:
       CCACHE_MAXSIZE: 500M
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Get time
         id: get_time
         run: echo "timestamp=$(date +%s%N)" >> $GITHUB_OUTPUT
 
       - name: Restore cache
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ${{ env.CCACHE_DIR }}
           key: mingw32-${{ steps.get_time.outputs.timestamp }}
@@ -56,13 +56,13 @@ jobs:
         run: |
           cd artifact && wine ./libmpv-2.dll || true
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v5
         with:
           name: libmpv-mingw32
           path: artifact/*
 
       - name: Save Cache
-        uses: actions/cache/save@v4
+        uses: actions/cache/save@v5
         if: always()
         with:
           path: ${{ env.CCACHE_DIR }}
