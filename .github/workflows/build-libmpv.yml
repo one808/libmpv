@@ -91,19 +91,9 @@ jobs:
         run: |
           cd artifact && wine ./libmpv-2.dll || true
 
-      - name: Rename artifacts with version
-        run: |
-          cd artifact
-          for f in libmpv-2.dll libmpv.dll.a libmpv.a; do
-            if [ -f "$f" ]; then
-              mv "$f" "libmpv-${MPV_VERSION}-$(basename $f)"
-            fi
-          done
-          ls -la
-
       - uses: actions/upload-artifact@v7
         with:
-          name: libmpv-mingw32
+          name: libmpv-mingw32-${{ env.MPV_VERSION }}
           path: artifact/*
 
       - name: Update version record
