@@ -2,9 +2,43 @@ name: Build libmpv DLL
 
 on:
   workflow_dispatch:
+  schedule:
+    - cron: '0 0 * * *'  # 每天 UTC 0:00 检查
 
 jobs:
+  check-and-build:
+    runs-on: ubuntu-24.04
+    outputs:
+      should_build: ${{ steps.check.outputs.should_build }}
+      mpv_version: ${{ steps.check.outputs.mpv_version }}
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Check upstream version
+        id: check
+        run: |
+          # 获取上游最新版本
+          UPSTREAM_VERSION=$(curl -s https://raw.githubusercontent.com/mpv-player/mpv/master/MPV_VERSION | tr -d '\n')
+          echo "Upstream version: $UPSTREAM_VERSION"
+
+          # 读取上次构建的版本
+          LAST_VERSION=$(cat .last_build_version 2>/dev/null || echo "none")
+          echo "Last built version: $LAST_VERSION"
+
+          # 比较版本
+          if [ "$UPSTREAM_VERSION" = "$LAST_VERSION" ]; then
+            echo "Version unchanged, skip build"
+            echo "should_build=false" >> $GITHUB_OUTPUT
+          else
+            echo "New version detected: $UPSTREAM_VERSION"
+            echo "should_build=true" >> $GITHUB_OUTPUT
+            echo "mpv_version=$UPSTREAM_VERSION" >> $GITHUB_OUTPUT
+          fi
+
   build:
+    needs: check-and-build
+    if: needs.check-and-build.outputs.should_build == 'true'
     runs-on: ubuntu-24.04
     env:
       TARGET: i686-w64-mingw32
@@ -12,6 +46,7 @@ jobs:
       CCACHE_BASEDIR: ${{ github.workspace }}
       CCACHE_DIR: ${{ github.workspace }}/.ccache
       CCACHE_MAXSIZE: 500M
+      MPV_VERSION: ${{ needs.check-and-build.outputs.mpv_version }}
 
     steps:
       - uses: actions/checkout@v7
@@ -56,10 +91,29 @@ jobs:
         run: |
           cd artifact && wine ./libmpv-2.dll || true
 
+      - name: Rename artifacts with version
+        run: |
+          cd artifact
+          for f in libmpv-2.dll libmpv.dll.a libmpv.a; do
+            if [ -f "$f" ]; then
+              mv "$f" "libmpv-${MPV_VERSION}-$(basename $f)"
+            fi
+          done
+          ls -la
+
       - uses: actions/upload-artifact@v7
         with:
-          name: libmpv-mingw32
+          name: libmpv-mingw32-${{ env.MPV_VERSION }}
           path: artifact/*
+
+      - name: Update version record
+        run: |
+          echo "${{ env.MPV_VERSION }}" > .last_build_version
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add .last_build_version
+          git commit -m "Build libmpv ${{ env.MPV_VERSION }}" || true
+          git -c http.proxy=socks5h://127.0.0.1:10808 push origin main || true
 
       - name: Save Cache
         uses: actions/cache/save@v6
