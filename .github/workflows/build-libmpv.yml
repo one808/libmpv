@@ -103,7 +103,7 @@ jobs:
 
       - uses: actions/upload-artifact@v7
         with:
-          name: libmpv-mingw32-${{ env.MPV_VERSION }}
+          name: libmpv-mingw32
           path: artifact/*
 
       - name: Update version record
