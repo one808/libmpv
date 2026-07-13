@@ -106,7 +106,7 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add .last_build_version
           git commit -m "Build libmpv ${{ env.MPV_VERSION }}" || true
-          git -c http.proxy=socks5h://127.0.0.1:10808 push origin main || true
+          git push origin main
 
       - name: Save Cache
         uses: actions/cache/save@v6
