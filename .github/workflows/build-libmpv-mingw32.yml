@@ -67,13 +67,3 @@ jobs:
         with:
           path: ${{ env.CCACHE_DIR }}
           key: mingw32-${{ steps.get_time.outputs.timestamp }}
-
-      - name: Release
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: build-${{ steps.get_time.outputs.timestamp }}
-          name: libmpv mingw32 build
-          body: |
-            Auto-built from commit ${{ github.sha }}
-          files: artifact/*
-          make_latest: false
