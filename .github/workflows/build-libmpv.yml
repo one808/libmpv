@@ -3,7 +3,7 @@ name: Build libmpv DLL
 on:
   workflow_dispatch:
   schedule:
-    - cron: '0 0 * * *'  # 每天 UTC 0:00 检查
+    - cron: '0 0 * * *'
 
 jobs:
   check-and-build:
@@ -18,15 +18,10 @@ jobs:
       - name: Check upstream version
         id: check
         run: |
-          # 获取上游最新版本
           UPSTREAM_VERSION=$(curl -s https://raw.githubusercontent.com/mpv-player/mpv/master/MPV_VERSION | tr -d '\n')
           echo "Upstream version: $UPSTREAM_VERSION"
-
-          # 读取上次构建的版本
           LAST_VERSION=$(cat .last_build_version 2>/dev/null || echo "none")
           echo "Last built version: $LAST_VERSION"
-
-          # 比较版本
           if [ "$UPSTREAM_VERSION" = "$LAST_VERSION" ]; then
             echo "Version unchanged, skip build"
             echo "should_build=false" >> $GITHUB_OUTPUT
@@ -40,6 +35,8 @@ jobs:
     needs: check-and-build
     if: needs.check-and-build.outputs.should_build == 'true'
     runs-on: ubuntu-24.04
+    permissions:
+      contents: write
     env:
       TARGET: i686-w64-mingw32
       RUST_TARGET: i686-pc-windows-gnu
@@ -111,3 +108,14 @@ jobs:
         with:
           path: ${{ env.CCACHE_DIR }}
           key: mingw32-${{ steps.get_time.outputs.timestamp }}
+
+      - name: Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: libmpv-${{ env.MPV_VERSION }}
+          name: libmpv ${{ env.MPV_VERSION }} (MinGW32)
+          body: |
+            Auto-built from mpv ${{ env.MPV_VERSION }}
+            Commit: ${{ github.sha }}
+          files: artifact/*
+          make_latest: false
