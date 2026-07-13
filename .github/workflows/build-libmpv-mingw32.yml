@@ -6,6 +6,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-24.04
+    permissions:
+      contents: write
     env:
       TARGET: i686-w64-mingw32
       RUST_TARGET: i686-pc-windows-gnu
@@ -65,3 +67,13 @@ jobs:
         with:
           path: ${{ env.CCACHE_DIR }}
           key: mingw32-${{ steps.get_time.outputs.timestamp }}
+
+      - name: Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: build-${{ steps.get_time.outputs.timestamp }}
+          name: libmpv mingw32 build
+          body: |
+            Auto-built from commit ${{ github.sha }}
+          files: artifact/*
+          make_latest: false
