@@ -116,7 +116,7 @@ jobs:
           key: mingw32-${{ steps.get_time.outputs.timestamp }}
 
       - name: Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           tag_name: libmpv-${{ env.PLATFORM }}-${{ env.MPV_VERSION }}
           name: libmpv ${{ env.MPV_VERSION }} (${{ env.PLATFORM }})
