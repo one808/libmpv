@@ -39,6 +39,7 @@ jobs:
       contents: write
     env:
       TARGET: i686-w64-mingw32
+      PLATFORM: windows-i686
       RUST_TARGET: i686-pc-windows-gnu
       CCACHE_BASEDIR: ${{ github.workspace }}
       CCACHE_DIR: ${{ github.workspace }}/.ccache
@@ -91,12 +92,12 @@ jobs:
       - name: Package artifact
         run: |
           cd artifact
-          zip -r ../libmpv-mingw32-${{ env.MPV_VERSION }}.zip .
+          zip -r ../libmpv-${{ env.PLATFORM }}-${{ env.MPV_VERSION }}.zip .
 
       - uses: actions/upload-artifact@v7
         with:
-          name: libmpv-mingw32-${{ env.MPV_VERSION }}
-          path: libmpv-mingw32-${{ env.MPV_VERSION }}.zip
+          name: libmpv-${{ env.PLATFORM }}-${{ env.MPV_VERSION }}
+          path: libmpv-${{ env.PLATFORM }}-${{ env.MPV_VERSION }}.zip
 
       - name: Update version record
         run: |
@@ -117,10 +118,11 @@ jobs:
       - name: Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: libmpv-${{ env.MPV_VERSION }}
-          name: libmpv ${{ env.MPV_VERSION }} (MinGW32)
+          tag_name: libmpv-${{ env.PLATFORM }}-${{ env.MPV_VERSION }}
+          name: libmpv ${{ env.MPV_VERSION }} (${{ env.PLATFORM }})
           body: |
             Auto-built from mpv ${{ env.MPV_VERSION }}
+            Platform: ${{ env.PLATFORM }}
             Commit: ${{ github.sha }}
-          files: libmpv-mingw32-${{ env.MPV_VERSION }}.zip
+          files: libmpv-${{ env.PLATFORM }}-${{ env.MPV_VERSION }}.zip
           make_latest: false
