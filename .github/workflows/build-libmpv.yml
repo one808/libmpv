@@ -88,10 +88,15 @@ jobs:
         run: |
           cd artifact && wine ./libmpv-2.dll || true
 
+      - name: Package artifact
+        run: |
+          cd artifact
+          zip -r ../libmpv-mingw32-${{ env.MPV_VERSION }}.zip .
+
       - uses: actions/upload-artifact@v7
         with:
           name: libmpv-mingw32-${{ env.MPV_VERSION }}
-          path: artifact/*
+          path: libmpv-mingw32-${{ env.MPV_VERSION }}.zip
 
       - name: Update version record
         run: |
@@ -117,5 +122,5 @@ jobs:
           body: |
             Auto-built from mpv ${{ env.MPV_VERSION }}
             Commit: ${{ github.sha }}
-          files: artifact/*
+          files: libmpv-mingw32-${{ env.MPV_VERSION }}.zip
           make_latest: false
